@@ -1,0 +1,5 @@
+core
+*.pyc
+*.py~
+*.swp
+_vocola_main.py
