@@ -1,77 +1,78 @@
 from dragonfly import *
 
-"""
-    Snap window to a region of the current monitor.
-"""
-class SnapWindowRule(CompoundRule):
-    spec = '(snap|place|move) window [to] [the] [<screen_region>] [corner] [ [on] monitor <monitor>]'
+class MoveWindowMonitor(ActionBase):
+    """Move window to a given monitor."""
+    def __init__(self, spec=None):
+        super(MoveWindowMonitor,self).__init__()
+        self._spec = spec
+
+    def _execute(self, data=None):
+        window=Window.get_foreground()
+        monitor=monitors[int(self._spec%data)-1].rectangle
+        current_monitor=window.get_containing_monitor().rectangle
+        current_position=window.get_position()
+        pos = Rectangle(
+            monitor.x1+current_position.x1-current_monitor.x1,
+            monitor.y1+current_position.y1-current_monitor.y1,
+            current_position.dx,
+            current_position.dy
+        )
+        window.set_position(pos)
+    
+class SnapWindow(ActionBase):
+    """Snap window to some region of the current monitor"""
+    def __init__(self, spec=None):
+        super(SnapWindow,self).__init__()
+        self._spec = spec
+        self.region_specs ={
+            'top left': [ 0, 0, 0.5, 0.5 ],
+            'top half': [ 0, 0, 1, 0.5 ],
+            'top right': [ 0.5, 0, 0.5, 0.5 ],
+            'right half': [ 0.5, 0, 0.5, 1 ],
+            'bottom right': [ 0.5, 0.5, 0.5, 0.5 ],
+            'bottom half': [ 0, 0.5, 1, 0.5 ],
+            'bottom left': [ 0, 0.5, 0.5, 0.5 ],
+            'left half': [ 0, 0, 0.5, 1 ],
+            'maximize': [ 0, 0, 1, 1 ]
+            }
+
+    def _execute(self, data=None):
+        window=Window.get_foreground()
+        monitor=window.get_containing_monitor().rectangle
+        region_spec=self.region_specs[self._spec % data]
+        pos = Rectangle(
+            monitor.x1+monitor.dx*region_spec[0],
+            monitor.y1+monitor.dy*region_spec[1],
+            monitor.dx*region_spec[2],
+            monitor.dy*region_spec[3])
+        window.set_position(pos)
+
+
+class WindowMappings(MappingRule):
+    mapping = {
+        'maximize window': SnapWindow('maximize'),
+        'snap window to <screen_region>': SnapWindow('%(screen_region)s'),
+        'move window to monitor <monitor>': MoveWindowMonitor('%(monitor)d'),
+    }
     extras = [
         Choice('screen_region', {
-            'northwest': 'northwest', 'top left': 'northwest',
-            'north': 'north', 'top': 'north',
-            'northeast': 'northeast', 'top right': 'northeast',
-            'east': 'east', 'right': 'east',
-            'southeast': 'southeast', 'bottom right': 'southeast',
-            'south': 'south', 'bottom': 'south',
-            'southwest': 'southwest', 'bottom left': 'southwest',
-            'west': 'west', 'left': 'west',
-            'maximized': 'maximized',
-            'as-is': 'as-is', 'as it is': 'as-is', 'unchanged': 'as-is'
+            'top left':     'top left',
+            'top half':     'top half',
+            'top right':    'top right',
+            'right half':   'right half',
+            'bottom right': 'bottom right',
+            'bottom half':  'bottom half',
+            'bottom left':  'bottom left',
+            'left half':    'left half',
         }),
         Integer('monitor',1,4)
     ]
-
-    def __init__(self):
-        self.region_specs ={
-            'northwest': [ 0, 0, 0.5, 0.5 ], 'north': [ 0, 0, 1, 0.5 ],
-            'northeast': [ 0.5, 0, 0.5, 0.5 ], 'east': [ 0.5, 0, 0.5, 1 ],
-            'southeast': [ 0.5, 0.5, 0.5, 0.5 ], 'south': [ 0, 0.5, 1, 0.5 ],
-            'southwest': [ 0, 0.5, 0.5, 0.5 ], 'west': [ 0, 0, 0.5, 1 ],
-            'maximized': [ 0, 0, 1, 1 ], 'as-is': [ -1, -1, -1, -1 ]
-            }
-        self.monitor_specs = {}
-        for i, m in enumerate(monitors):
-            self.monitor_specs[i]=m
-        super(SnapWindowRule,self).__init__()
-
-    def _process_recognition(self, node, extras):
-        window=Window.get_foreground()
-        
-        if 'monitor' in extras:
-            monitor=self.monitor_specs[extras['monitor']-1].rectangle
-        else:
-            monitor=window.get_containing_monitor().rectangle
-
-        if 'screen_region' in extras:
-            region_id=extras['screen_region']
-        else:
-            region_id='as-is'
-            
-        region_spec=self.region_specs[region_id]
-
-        if region_spec[0] < 0:
-            current_monitor=window.get_containing_monitor().rectangle
-            current_position=window.get_position()
-            pos = Rectangle(
-                monitor.x1+current_position.x1-current_monitor.x1,
-                monitor.y1+current_position.y1-current_monitor.y1,
-                current_position.dx,
-                current_position.dy
-                )
-        else:
-            pos = Rectangle(
-                monitor.x1+monitor.dx*region_spec[0],
-                monitor.y1+monitor.dy*region_spec[1],
-                monitor.dx*region_spec[2],
-                monitor.dy*region_spec[3])
-
-        window.set_position(pos)
 
 """
     Set up the grammar
 """
 grammar =  Grammar('window control')
-grammar.add_rule(SnapWindowRule())
+grammar.add_rule(WindowMappings())
 grammar.load()
 def unload():
     global grammar
