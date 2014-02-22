@@ -46,10 +46,11 @@ and NatLink will pick the macros up.
 
 ## Identifiers
 
-| Command                           | Description                                                  |
-|-----------------------------------|--------------------------------------------------------------|
-| `score <dictation>`               | Inserts `dictation_formatted_like_this`                      |
-| `(upper|lower) camel <dictation>` | Inserts `[Dd]ictationFormattedLikeThis`                      |
-| `constant <dictation>`            | Inserts `DICTATION_FORMATTED_LIKE_THIS`                      |
-| `lisp <dictation>`                | Inserts `dictation-formatted-like-this`                      |
+| Command                   | Description                                 |
+|---------------------------|---------------------------------------------|
+| `constant <dictation>`    | Inserts `DICTATION_FORMATTED_LIKE_THIS`     |
+| `lisp <dictation>`        | Inserts `dictation-formatted-like-this`     |
+| `lower camel <dictation>` | Inserts `dictationFormattedLikeThis`        |
+| `score <dictation>`       | Inserts `dictation_formatted_like_this`     |
+| `upper camel <dictation>` | Inserts `DictationFormattedLikeThis`        |
 
