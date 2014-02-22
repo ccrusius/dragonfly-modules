@@ -61,105 +61,109 @@ class BufferCommand(EmacsCommand):
     def format_command(self, command):
         string = 'with-current-buffer (window-buffer (selected-window)) (%s)' % command
         return super(BufferCommand, self).format_command(string)
-        
-class TextFormatter(ActionBase):
-    """Text formatter base class: an action that adds a pre-formatting step to 'Text'"""
-    def __init__(self, spec=None):
-        super(TextFormatter,self).__init__()
-        self._spec = spec
+            
+#class Phonetic(TextFormatter):
+#    """
+#    A formatter that picks up the first letter of the words said. Letters
+#    can be capitalized with 'capitalize' before them.
+#    """
+#    def __init__(self, spec=None):
+#        super(Phonetic,self).__init__(spec)
+#
+#    def _format_text(self, text):
+#        words = [ word.lower() for word in text.split(' ') ]
+#        text = ""
+#        capitalize = False
+#        for word in words:
+#            if word == 'capital' or word == 'cap':
+#                capitalize = True
+#            else:
+#                if capitalize:
+#                    word = word.upper()
+#                text = text + word[0]
+#                capitalize = False
+#        return text
 
-    def _format_text(self, text):
-        pass
-        
-    def _execute(self, data=None):
-        text = self._spec
-        if data is None:
-            data = {}
-        if self._spec.find('%') > -1:
-            text = self._spec % data
-        text = self._format_text(text)
-        Text(text).execute()
+class EmacsIdentifiers(CompoundRule):
+    spec = '<naming> <text>'
+    extras = [
+        Choice('naming', {
+            # [ lower(false)/upper(true) all first, cap first word, cap other words, sep ]
+            'constant': [ False, False, False, '_' ],
+            'lisp': [ True, False, False, '-' ],
+            'lower camel': [ True, False, True, '' ],
+            'score': [ True, False, False, '_' ],
+            'upper camel': [ True, True, True, '' ],
+        }),
+        Dictation('text')
+    ]
+
+    def _process_recognition(self, node, extras):
+        spec = extras['naming']
+        text = extras['text']
+        text = text.lower() if spec[0] else text.upper()
+        words = text.split(' ')
+        if len(words) == 0: return
+        if spec[1]: words[0] = words[0].capitalize()
+        if spec[2]: words = [ word[0] ] + (word.capitalize() for word in words[1:])
+        Text(spec[3].join(words)).execute()            
+               
+class EmacsSymbols(MappingRule):
+    mapping = {
+        'at': Key('at'),
+        'close arc': Key('rparen'),
+        'close curly': Key('rbrace'),
+        'close square': Key('rbracket'),
+        'colon': Key('colon'),
+        'comma': Key('comma'),
+        'dot': Key('dot'),
+        'hash': Key('hash'),
+        'open arc': Key('lparen'),
+        'open curly': Key('lbrace'),
+        'open square': Key('lbracket'),
+        'percent': Key('percent'),
+        'plus': Key('plus'),
+        'slash': Key('slash'),
+    }
+
+class EmacsGroupingSymbols(MappingRule):
+    mapping = {
+        'angle': Key('langle, rangle, left'),
+        'arc': Key('lparen, rparen, left'),
+        'curly': Key('lbrace, rbrace, left'),
+        'double': Key('dquote, dquote, left'),
+        'single': Key('squote, squote, left'),
+        'square': Key('lbracket, rbracket, left'),
+    }
     
-class TypeName(TextFormatter):
-    """Formats spoken words as a Java-style type name."""
-    def __init__(self, spec=None):
-        super(TypeName,self).__init__(spec)
-
-    def _format_text(self, text):
-        words = [ word.lower() for word in text.split(' ') ]
-        return ''.join(word.capitalize() for word in words)
-
-class VarName(TextFormatter):
-    """Formats spoken words as a Java-style method/variable name."""
-    def __init__(self, spec=None):
-        super(VarName,self).__init__(spec)
-
-    def _format_text(self, text):
-        words = [ word.lower() for word in text.split(' ') ]
-        return words[0] + ''.join(word.capitalize() for word in words[1:] )
-
-class ScoreName(TextFormatter):
-    """Formats spoken words as a C-style undercored variable name."""
-    def __init__(self, spec=None):
-        super(ScoreName,self).__init__(spec)
-
-    def _format_text(self, text):
-        words = [ word.lower() for word in text.split(' ') ]
-        return '_'.join(words)
-
-class LispName(TextFormatter):
-    """Formats spoken words as a Lisp-style dashed name."""
-    def __init__(self, spec=None):
-        super(LispName,self).__init__(spec)
-
-    def _format_text(self, text):
-        words = [ word.lower() for word in text.split(' ') ]
-        return '-'.join(words)
-        
-class Phonetic(TextFormatter):
-    """
-    A formatter that picks up the first letter of the words said. Letters
-    can be capitalized with 'capitalize' before them.
-    """
-    def __init__(self, spec=None):
-        super(Phonetic,self).__init__(spec)
-
-    def _format_text(self, text):
-        words = [ word.lower() for word in text.split(' ') ]
-        text = ""
-        capitalize = False
-        for word in words:
-            if word == 'capital' or word == 'cap':
-                capitalize = True
-            else:
-                if capitalize:
-                    word = word.upper()
-                text = text + word[0]
-                capitalize = False
-        return text
-
 class EmacsGlobalMappings(MappingRule):
     mapping = {
-        '(drop it|cancel)': Key('escape:3'), # WSR screws up 'cancel'
-        '(undo|regret) [that]': Key('c-x, u'), # WSR screws up 'undo'
+        'cancel': Key('escape:3'), # WSR screws up 'cancel'
+        'undo [that]': Key('c-x, u'), # WSR screws up 'undo'
         'tab': Key('tab'),
         'say <text>': Text('%(text)s'),
         #
         # File
         #
-        '(open|load) file': Key('c-x, c-f'), # WSR screws up 'open'
-        '(save|write) file': Key('c-x, c-s'), # WSR screws up 'save'
+        'open file': Key('c-x, c-f'), # WSR screws up 'open'
+        'save file': Key('c-x, c-s'), # WSR screws up 'save'
         #
         # Movement
         #
-        '(skip|right|forward) [<n>] (word|words)': Key('a-f:%(n)d'),
-        '(back|left) [<n>] (word|words)': Key('a-b:%(n)d'),
-        '(skip|right|forward) [<n>] (block|blocks)': Key('a-e:%(n)d'),
+        'skip sex [<n>]': Key('ca-f:%(n)d'),
+        'back sex [<n>]': Key('ca-b:%(n)d'),
+        'skip list [<n>]': Key('ca-n:%(n)d'),
+        'back list [<n>]': Key('ca-p:%(n)d'),
+        'skip word [<n>]': Key('a-f:%(n)d'),
+        'back word [<n>]': Key('a-b:%(n)d'),
+        '(skip|right) [<n>] (block|blocks)': Key('a-e:%(n)d'),
         '(back|up) [<n>] (block|blocks)': Key('a-a:%(n)d'),
-        '(skip|down|forward) [<n>] (line|lines)': Key('c-n:%(n)d'),
+        '(skip|down) [<n>] (line|lines)': Key('c-n:%(n)d'),
         '(back|up) [<n>] (line|lines)': Key('c-p:%(n)d'),
         'left [<n>]': Key('left:%(n)d'),
         'right [<n>]': Key('right:%(n)d'),
+        'up [<n>]': Key('up:%(n)d'),
+        'down [<n>]': Key('down:%(n)d'),
         '[go to] line [number] [<n>]': BufferCommand('goto-line %(n)d'),
         'search <text>': Key('c-s, enter') + Text('%(text)s') + Key('enter'),
         'back search <text>': Key('c-r, enter') + Text('%(text)s') + Key('enter'),
@@ -170,13 +174,18 @@ class EmacsGlobalMappings(MappingRule):
         # Selecting
         #
         '(set) mark': Key('c-space'),
+        'cut': Key('c-w'),
+        'copy': Key('a-w'),
+        'paste': Key('c-y'),
         #
         # Erasing
         # "erase"  = remove backward
         # "delete" = remove forward
         #
+        'kill sex [<n>]': Key('ca-k:%(n)d'),
         'erase [<n>] (word|words)': Key('a-backspace:%(n)d'),
         'delete [<n>] (word|words)': Key('a-delete:%(n)d'),
+        'kill sex [<n>]': Key('ca-k:%(n)d'),
         '(kill|delete|erase) [<n>] (line|lines)': Key('cs-backspace:%(n)d'),
         '(erase|backspace) [<n>]': Key('backspace:%(n)d'),
         #
@@ -191,40 +200,16 @@ class EmacsGlobalMappings(MappingRule):
         'close other windows': Key('c-x, 1'),
         'split horizontal': Key('c-x, 2'),
         'split vertical': Key('c-x, 3'),
-        #
-        # Indentifiers
-        #
-        '(type [name] | class name) <text>': TypeName('%(text)s'),
-        'score <text>': ScoreName('%(text)s'),
-        'var <text>': VarName('%(text)s'),
-        'spell <text>': Phonetic('%(text)s'),
-        'lisp <text>': LispName('%(text)s'),
-        #
-        # Parenthesis
-        #
-        '(arc|ark)': Key('lparen, rparen, left'),
-        'square': Key('lbracket, rbracket, left'),
-        'curly': Key('lbrace, rbrace, left'),
-        'angle': Key('langle, rangle, left'),
-        'single': Key('squote, squote, left'),
-        'double': Key('dquote, dquote, left'),
+#        'spell <text>': Phonetic('%(text)s'),
         #
         # Symbols
         #
-        'at': Key('at'),
-        'hash': Key('hash'),
-        'colon': Key('colon'),
-        'comma': Key('comma'),
-        'dot': Key('dot'),
-        'slash': Key('slash'),
         '(dash|minus)': Key('hyphen'),
         'backslash': Key('backslash'),
         '(bar|pipe)': Key('bar'),
         '(equal|equals)': Key('equal'),
         'less than': Key('langle'),
         '(greater|more|bigger) than': Key('rangle'),
-        'percent': Key('percent'),
-        'plus': Key('plus'),
         'enter': Key('enter'),
         #
         # Folding
@@ -247,11 +232,14 @@ class EmacsPythonMappings(MappingRule):
     """Emacs mappings for python coding"""
     mapping = {
         '(new|create) python class': Key('a-colon')+Text('(python-skeleton-class)')+Key('enter'),
-        '(new|create) python def': Key('a-colon')+Text('(python-skeleton-def)')+Key('enter')
+        '(new|create) python function': Text('def ():')+Key('left:3')
         }
 
 context = AppContext(executable="emacs")
 grammar = Grammar("GNU Emacs", context=context)
+grammar.add_rule(EmacsIdentifiers())
+grammar.add_rule(EmacsSymbols())
+grammar.add_rule(EmacsGroupingSymbols())
 grammar.add_rule(EmacsGlobalMappings())
 grammar.add_rule(EmacsPythonMappings())
 grammar.load()
