@@ -88,7 +88,11 @@ class EmacsIdentifiers(CompoundRule):
     spec = '<naming> <text>'
     extras = [
         Choice('naming', {
-            # [ lower(false)/upper(true) all first, cap first word, cap other words, sep ]
+            # [
+            #   lower(false)/upper(true) all first,
+            #   cap first word, cap other words,
+            #   separator
+            # ]
             'constant': [ False, False, False, '_' ],
             'lisp': [ True, False, False, '-' ],
             'lower camel': [ True, False, True, '' ],
@@ -100,12 +104,12 @@ class EmacsIdentifiers(CompoundRule):
 
     def _process_recognition(self, node, extras):
         spec = extras['naming']
-        text = extras['text']
+        text = extras['text'].format()
         text = text.lower() if spec[0] else text.upper()
         words = text.split(' ')
         if len(words) == 0: return
-        if spec[1]: words[0] = words[0].capitalize()
-        if spec[2]: words = [ word[0] ] + (word.capitalize() for word in words[1:])
+        if spec[1]: words[0]=words[0].capitalize()
+        if spec[2]: words=[words[0]] + [w.capitalize() for w in words[1:]]
         Text(spec[3].join(words)).execute()            
                
 class EmacsSymbols(MappingRule):
