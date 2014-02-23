@@ -61,28 +61,6 @@ class BufferCommand(EmacsCommand):
     def format_command(self, command):
         string = 'with-current-buffer (window-buffer (selected-window)) (%s)' % command
         return super(BufferCommand, self).format_command(string)
-            
-#class Phonetic(TextFormatter):
-#    """
-#    A formatter that picks up the first letter of the words said. Letters
-#    can be capitalized with 'capitalize' before them.
-#    """
-#    def __init__(self, spec=None):
-#        super(Phonetic,self).__init__(spec)
-#
-#    def _format_text(self, text):
-#        words = [ word.lower() for word in text.split(' ') ]
-#        text = ""
-#        capitalize = False
-#        for word in words:
-#            if word == 'capital' or word == 'cap':
-#                capitalize = True
-#            else:
-#                if capitalize:
-#                    word = word.upper()
-#                text = text + word[0]
-#                capitalize = False
-#        return text
 
 class EmacsIdentifiers(CompoundRule):
     spec = '<naming> <text>'
@@ -143,8 +121,8 @@ class EmacsGroupingSymbols(MappingRule):
 class EmacsGlobalMappings(MappingRule):
     mapping = {
         'cancel': Key('escape:3'), # WSR screws up 'cancel'
-        'undo [that]': Key('c-x, u'), # WSR screws up 'undo'
-        'tab': Key('tab'),
+        'undo that': Key('c-x, u'), # WSR screws up 'undo'
+        'tab [<n>]': Key('tab:%(n)d'),
         'say <text>': Text('%(text)s'),
         #
         # File
@@ -204,7 +182,6 @@ class EmacsGlobalMappings(MappingRule):
         'close other windows': Key('c-x, 1'),
         'split horizontal': Key('c-x, 2'),
         'split vertical': Key('c-x, 3'),
-#        'spell <text>': Phonetic('%(text)s'),
         #
         # Symbols
         #
