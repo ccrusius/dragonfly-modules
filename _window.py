@@ -1,11 +1,52 @@
 from dragonfly import (Grammar,
                        CompoundRule,
-                       Choice, Integer)
+                       Choice, Dictation, Integer)
 
 from dragonfly.windows.window import Window
 from dragonfly.windows.monitor import monitors
 from dragonfly.windows.rectangle import Rectangle
+from difflib import get_close_matches
+from time import sleep
 
+class FocusWindow(CompoundRule):
+    spec='focus <name>'
+    extras=[Dictation('name')]
+
+    @staticmethod
+    def clean_unwanted_matches(matches,name):
+        result=[]
+        for match in matches:
+            if match == 'focus '+name: continue
+            if match == 'program manager': continue
+            if match == 'winsplithookhiddenframe': continue
+            result.append(match)
+        return result
+        
+    def _process_recognition(self,node,extras):
+        name=extras['name'].format().lower()
+        windows=Window.get_all_windows()
+        names=[]
+        for window in windows:
+            if not window.is_visible: continue
+            names.append(window.executable.lower())
+            names.append(window.title.lower())
+        executables=[w.executable.lower() for w in windows]
+        titles=[w.title.lower() for w in windows]
+        matches=get_close_matches(name,names,10,0.1)
+        matches=self.clean_unwanted_matches(matches,name)
+        if len(matches) == 0: return
+        for window in windows:
+            if not window.is_visible: continue
+            if window.executable.lower()==matches[0] or window.title.lower()==matches[0]:
+                for attempt in range(4):
+                    try:
+                        window.set_foreground()
+                    except Exception:
+                        sleep(0.2)
+                    else:
+                        break
+                return
+        
 class BasicWindowOps(CompoundRule):
     spec='<operation> window'
     extras=[
@@ -18,7 +59,7 @@ class BasicWindowOps(CompoundRule):
     def _process_recognition(self, node, extras):
         window=Window.get_foreground()
         extras['operation'](window)
-        
+
 class MoveToMonitorRule(CompoundRule):
     spec='move window to monitor <monitor>'
     extras=[Integer('monitor',1,9)]
@@ -72,6 +113,7 @@ grammar =  Grammar('window control')
 grammar.add_rule(BasicWindowOps())
 grammar.add_rule(SnapWindowRule())
 grammar.add_rule(MoveToMonitorRule())
+grammar.add_rule(FocusWindow())
 grammar.load()
 def unload():
     global grammar

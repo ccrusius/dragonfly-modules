@@ -8,11 +8,12 @@ and NatLink will pick the macros up.
 
 | Command                           | Description                                       |
 |-----------------------------------|---------------------------------------------------|
-| `move window to monitor <number>` | Move window to given monitor, keeping size.       |
+| `move window to monitor <number>` | Move window to given monitor, keeping size        |
 | `snap window to <place>`          | Resize and move window to given place (see below) |
 | `maximize window`                 | Maximize current window                           |
 | `minimize window`                 | Minimize (iconify) current window                 |
 | `restore window`                  | Restore current window to non-maximized size      |
+| `focus <window name>`             | Bring named window to the foreground              |
 
 * `<places>`: One of `top (left | half | right)`, `bottom (left | half | right)`, `left half`, `right half`.
 
