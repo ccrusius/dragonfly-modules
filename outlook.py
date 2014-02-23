@@ -9,7 +9,7 @@
 from dragonfly import(Config, Section, Item,
                       Grammar, ConnectionGrammar, AppContext,
                       MappingRule, CompoundRule,
-                      Key, Integer,
+                      Key, IntegerRef,
                       DictList, DictListRef)
 
 config = Config('Microsoft Outlook control')
@@ -109,10 +109,17 @@ class OutlookMappings(MappingRule):
         'collapse': Key('left'),
         'expand': Key('right'),
         'shortcut <n>': Key('cs-%(n)d'),
+        'up [<n>]': Key('up:%(n)d'),
+        'down [<n>]': Key('down:%(n)d'),
+        'next week [<n>]': Key('a-down:%(n)d'),
+        'previous week [<n>]': Key('a-up:%(n)d'),
     }
     extras = [
-            Integer('n',0,9999),
+            IntegerRef('n',0,9999)
             ]
+    defaults = {
+            'n': 1
+            }
 
 grammar.add_rule(OutlookMappings())
 
