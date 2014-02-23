@@ -11,39 +11,11 @@ class GlobalChromeMappings(MappingRule):
         'up': Key('up'),
         }
 
-class GMailMappings(MappingRule):
-    """
-    Mappings for GMmail. Shortcuts should be enabled in GMail settings.
-    """
-    mapping = {
-        'compose message': Key('c'),
-        'message list': Key('u'),
-        'archive message': Key('e'),
-        'reply [to] message': Key('r'),
-        'reply [to] all': Key('a'),
-        'select message': Key('x'),
-        'erase message': Key('hash'),
-        'open message': Key('o'),
-    }
-
-grammars = {}
-
-def create_chrome_grammar(name,context,rules):
-    global grammars
-    grammars[name] = Grammar( name, context )
-    for rule in rules:
-        grammars[name].add_rule(rule)
-    grammars[name].load()
-    
-chrome_context = AppContext(executable='chrome')
-create_chrome_grammar('Google Chrome',chrome_context,[GlobalChromeMappings()])
-
-gmail_context = chrome_context & AppContext(title='@gmail.com')
-create_chrome_grammar('Google Chrome GMail', gmail_context, [GMailMappings()])
+context = AppContext(executable='chrome')
+grammar=Grammar('Google Chrome',context=context)
+grammar.add_rule(GlobalChromeMappings())
 
 def unload():
-    global grammars
-    for name, grammar in grammars.iteritems():
-        if grammar: grammar.unload()
-        grammars[name] = None
-    grammars = {}
+    global grammar
+    if grammar: grammar.unload()
+    grammar = None
