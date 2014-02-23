@@ -1,5 +1,5 @@
 Speech recognition macros, using dragonfly. Used with Dragon
-NaturallySpeaking 12, in Windows 7 64 bits.
+NaturallySpeaking (DNL) 12, in Windows 7 64 bits.
 
 This repository can be cloned directly into `C:\NatLink\NatLink\MacroSystem`
 and NatLink will pick the macros up.
@@ -10,8 +10,13 @@ and NatLink will pick the macros up.
 |-----------------------------------|---------------------------------------------------|
 | `move window to monitor <number>` | Move window to given monitor, keeping size.       |
 | `snap window to <place>`          | Resize and move window to given place (see below) |
+| `maximize window`                 | Maximize current window                           |
+| `minimize window`                 | Minimize (iconify) current window                 |
+| `restore window`                  | Restore current window to non-maximized size      |
 
-* `<places>`: One of `top (left | half | right)`, `bottom (left | half | right)`, `left half`, or `right half`.
+* `<places>`: One of `top (left | half | right)`, `bottom (left | half | right)`, `left half`, `right half`.
+
+Although some of the above commands are pre-defined in DNL, they do not work with some applications (such as Emacs)
 
 # Emacs
 

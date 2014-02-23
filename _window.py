@@ -1,14 +1,31 @@
-from dragonfly import *
+from dragonfly import (Grammar,
+                       CompoundRule,
+                       Choice, Integer)
 
-class MoveWindowMonitor(ActionBase):
-    """Move window to a given monitor."""
-    def __init__(self, spec=None):
-        super(MoveWindowMonitor,self).__init__()
-        self._spec = spec
+from dragonfly.windows.window import Window
+from dragonfly.windows.monitor import monitors
+from dragonfly.windows.rectangle import Rectangle
 
-    def _execute(self, data=None):
+class BasicWindowOps(CompoundRule):
+    spec='<operation> window'
+    extras=[
+        Choice('operation',{
+            'maximize': Window.maximize,
+            'minimize': Window.minimize,
+            'restore': Window.restore
+            })
+        ]
+    def _process_recognition(self, node, extras):
         window=Window.get_foreground()
-        monitor=monitors[int(self._spec%data)-1].rectangle
+        extras['operation'](window)
+        
+class MoveToMonitorRule(CompoundRule):
+    spec='move window to monitor <monitor>'
+    extras=[Integer('monitor',1,9)]
+
+    @staticmethod
+    def move_to_monitor(window,monitor_number):
+        monitor=monitors[monitor_number].rectangle
         current_monitor=window.get_containing_monitor().rectangle
         current_position=window.get_position()
         pos = Rectangle(
@@ -18,13 +35,15 @@ class MoveWindowMonitor(ActionBase):
             current_position.dy
         )
         window.set_position(pos)
+
+    def _process_recognition(self, node, extras):
+        monitor_number=int(extras['monitor'])-1
+        self.move_to_monitor(Window.get_foreground(),monitor_number)
     
-class SnapWindow(ActionBase):
-    """Snap window to some region of the current monitor"""
-    def __init__(self, spec=None):
-        super(SnapWindow,self).__init__()
-        self._spec = spec
-        self.region_specs ={
+class SnapWindowRule(CompoundRule):
+    spec='snap window to <region>'
+    extras=[
+        Choice('region',{
             'top left': [ 0, 0, 0.5, 0.5 ],
             'top half': [ 0, 0, 1, 0.5 ],
             'top right': [ 0.5, 0, 0.5, 0.5 ],
@@ -33,46 +52,26 @@ class SnapWindow(ActionBase):
             'bottom half': [ 0, 0.5, 1, 0.5 ],
             'bottom left': [ 0, 0.5, 0.5, 0.5 ],
             'left half': [ 0, 0, 0.5, 1 ],
-            'maximize': [ 0, 0, 1, 1 ]
-            }
+        })]
 
-    def _execute(self, data=None):
-        window=Window.get_foreground()
+    @staticmethod
+    def snap_window(window,region_spec):
         monitor=window.get_containing_monitor().rectangle
-        region_spec=self.region_specs[self._spec % data]
         pos = Rectangle(
             monitor.x1+monitor.dx*region_spec[0],
             monitor.y1+monitor.dy*region_spec[1],
             monitor.dx*region_spec[2],
             monitor.dy*region_spec[3])
+        window.restore()
         window.set_position(pos)
 
+    def _process_recognition(self, node, extras):
+        self.snap_window(Window.get_foreground(),extras['region'])
 
-class WindowMappings(MappingRule):
-    mapping = {
-        'maximize window': SnapWindow('maximize'),
-        'snap window to <screen_region>': SnapWindow('%(screen_region)s'),
-        'move window to monitor <monitor>': MoveWindowMonitor('%(monitor)d'),
-    }
-    extras = [
-        Choice('screen_region', {
-            'top left':     'top left',
-            'top half':     'top half',
-            'top right':    'top right',
-            'right half':   'right half',
-            'bottom right': 'bottom right',
-            'bottom half':  'bottom half',
-            'bottom left':  'bottom left',
-            'left half':    'left half',
-        }),
-        Integer('monitor',1,4)
-    ]
-
-"""
-    Set up the grammar
-"""
 grammar =  Grammar('window control')
-grammar.add_rule(WindowMappings())
+grammar.add_rule(BasicWindowOps())
+grammar.add_rule(SnapWindowRule())
+grammar.add_rule(MoveToMonitorRule())
 grammar.load()
 def unload():
     global grammar
