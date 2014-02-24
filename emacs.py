@@ -125,7 +125,7 @@ class EmacsGlobalMappings(MappingRule):
         'undo that': Key('c-x, u'), # WSR screws up 'undo'
         'tab [<n>]': Key('tab:%(n)d'),
         'say <text>': Text('%(text)s'),
-        'close window': Text('c-x,c-c'),
+        'close window': Key('c-x,c-c'),
         #
         # File
         #
