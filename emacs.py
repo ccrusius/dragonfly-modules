@@ -71,11 +71,12 @@ class EmacsIdentifiers(CompoundRule):
             #   cap first word, cap other words,
             #   separator
             # ]
-            'constant': [ False, False, False, '_' ],
-            'lisp': [ True, False, False, '-' ],
-            'lower camel': [ True, False, True, '' ],
-            'score': [ True, False, False, '_' ],
-            'upper camel': [ True, True, True, '' ],
+            'constant': [ True, False, False, '_' ],
+            'lisp': [ False, False, False, '-' ],
+            'lower camel': [ False, False, True, '' ],
+            'score': [ False, False, False, '_' ],
+            'upper camel': [ False, True, True, '' ],
+            'lower spaced': [ False, False, False, ' ' ]
         }),
         Dictation('text')
     ]
@@ -83,7 +84,7 @@ class EmacsIdentifiers(CompoundRule):
     def _process_recognition(self, node, extras):
         spec = extras['naming']
         text = extras['text'].format()
-        text = text.lower() if spec[0] else text.upper()
+        text = text.upper() if spec[0] else text.lower()
         words = text.split(' ')
         if len(words) == 0: return
         if spec[1]: words[0]=words[0].capitalize()
@@ -124,6 +125,7 @@ class EmacsGlobalMappings(MappingRule):
         'undo that': Key('c-x, u'), # WSR screws up 'undo'
         'tab [<n>]': Key('tab:%(n)d'),
         'say <text>': Text('%(text)s'),
+        'close window': Text('c-x,c-c'),
         #
         # File
         #
@@ -142,16 +144,9 @@ class EmacsGlobalMappings(MappingRule):
         '(back|up) [<n>] (block|blocks)': Key('a-a:%(n)d'),
         '(skip|down) [<n>] (line|lines)': Key('c-n:%(n)d'),
         '(back|up) [<n>] (line|lines)': Key('c-p:%(n)d'),
-        'left [<n>]': Key('left:%(n)d'),
-        'right [<n>]': Key('right:%(n)d'),
-        'up [<n>]': Key('up:%(n)d'),
-        'down [<n>]': Key('down:%(n)d'),
         '[go to] line [number] [<n>]': BufferCommand('goto-line %(n)d'),
         'search <text>': Key('c-s, enter') + Text('%(text)s') + Key('enter'),
         'back search <text>': Key('c-r, enter') + Text('%(text)s') + Key('enter'),
-        'home': Key('c-a'),
-        'end': Key('c-e'),
-        '(back | left) <n>': Key('left:%(n)d'),
         #
         # Selecting
         #
@@ -178,7 +173,7 @@ class EmacsGlobalMappings(MappingRule):
         #
         # Windows
         #
-        '(switch|next) window': Key('c-x, o'),
+        'go to next window': Key('c-x, o'),
         'close other windows': Key('c-x, 1'),
         'split horizontal': Key('c-x, 2'),
         'split vertical': Key('c-x, 3'),
@@ -191,20 +186,20 @@ class EmacsGlobalMappings(MappingRule):
         '(equal|equals)': Key('equal'),
         'less than': Key('langle'),
         '(greater|more|bigger) than': Key('rangle'),
-        'enter': Key('enter'),
         #
         # Folding
         #
-        '(begin|start) folding': BufferCommand('hs-minor-mode')+Key('enter, c-c, at, ca-h'),
+        'start folding': BufferCommand('hs-minor-mode')+Key('enter, c-c, at, ca-h'),
         '(show|expand) all [(blocks|folds)]': Key('c-c, at, ca-s'),
         '(hide|collapse) all [(blocks|folds)]': Key('c-c, at, ca-h'),
-        '(show|expand) (block|fold)': Key('c-c, at, c-s'),
-        '(hide|collapse) (block|fold)': Key('c-c, at, c-h'),
+        '(show|expand) (block|fold)': Key('home, c-c, at, c-s'),
+        '(hide|collapse) (block|fold)': Key('home, c-c, at, c-h'),
         }
     extras = [
             IntegerRef('n',0,9999),
             Dictation('text')
             ]
+
     defaults = {
             'n': 1
             }

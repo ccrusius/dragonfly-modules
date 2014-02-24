@@ -14,30 +14,21 @@ class FocusWindow(CompoundRule):
 
     @staticmethod
     def clean_unwanted_matches(matches,name):
-        result=[]
-        for match in matches:
-            if match == 'focus '+name: continue
-            if match == 'program manager': continue
-            if match == 'winsplithookhiddenframe': continue
-            result.append(match)
-        return result
+        return [m for m in matches if m not in [
+            'focus '+name,
+            'program manager',
+            'winsplithookhiddenframe']]
         
     def _process_recognition(self,node,extras):
         name=extras['name'].format().lower()
-        windows=Window.get_all_windows()
-        names=[]
-        for window in windows:
-            if not window.is_visible: continue
-            names.append(window.executable.lower())
-            names.append(window.title.lower())
-        executables=[w.executable.lower() for w in windows]
-        titles=[w.title.lower() for w in windows]
+        windows=[w for w in Window.get_all_windows() if w.is_visible ]
+        names=[w.executable.lower() for w in windows]
+        names+=[w.title.lower() for w in windows]
         matches=get_close_matches(name,names,10,0.1)
         matches=self.clean_unwanted_matches(matches,name)
-        if len(matches) == 0: return
+        if not matches: return
         for window in windows:
-            if not window.is_visible: continue
-            if window.executable.lower()==matches[0] or window.title.lower()==matches[0]:
+            if matches[0] in [window.executable.lower(),window.title.lower()]:
                 for attempt in range(4):
                     try:
                         window.set_foreground()

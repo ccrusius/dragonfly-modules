@@ -109,8 +109,6 @@ class OutlookMappings(MappingRule):
         'collapse': Key('left'),
         'expand': Key('right'),
         'shortcut <n>': Key('cs-%(n)d'),
-        'up [<n>]': Key('up:%(n)d'),
-        'down [<n>]': Key('down:%(n)d'),
         'next week [<n>]': Key('a-down:%(n)d'),
         'previous week [<n>]': Key('a-up:%(n)d'),
     }

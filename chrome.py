@@ -1,15 +1,21 @@
-from dragonfly import (Grammar, AppContext, MappingRule, Key)
+from dragonfly import (Grammar, AppContext, MappingRule, Integer, Key)
 
 class GlobalChromeMappings(MappingRule):
     mapping = {
         'close tab': Key('c-w'),
-        'new tab': Key('c-t'),
+	'open new tab': Key('c-t'),
         'reopen tab': Key('cs-t'),
-        'next tab': Key('c-tab'),
-        'last tab': Key('cs-tab'),
-        'down': Key('down'),
-        'up': Key('up'),
+        'go to next tab': Key('c-tab'),
+        'go to previous tab': Key('cs-tab'),
+        'go to tab <tab>': Key('c-%(tab)d'),
+        'go to last tab': Key('c-9'),
+        'go back': Key('a-left'),
+        'go forward': Key('a-right'),
+        'reload page': Key('c-r'),
         }
+    extras=[
+        Integer('tab', 1, 8)
+    ]
 
 context = AppContext(executable='chrome')
 grammar=Grammar('Google Chrome',context=context)

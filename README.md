@@ -1,5 +1,5 @@
 Speech recognition macros, using dragonfly. Used with Dragon
-NaturallySpeaking (DNL) 12, in Windows 7 64 bits.
+NaturallySpeaking (DNL) 12 and SpeechStart+, in Windows 7 64 bits.
 
 This repository can be cloned directly into `C:\NatLink\NatLink\MacroSystem`
 and NatLink will pick the macros up.
@@ -17,7 +17,10 @@ and NatLink will pick the macros up.
 
 * `<places>`: One of `top (left | half | right)`, `bottom (left | half | right)`, `left half`, `right half`.
 
-Although some of the above commands are pre-defined in DNL, they do not work with some applications (such as Emacs)
+Although some of the above commands are pre-defined in DNL, they do not work
+with some applications (such as Emacs). Some of those commands are also
+present in SpeechStart+, but they do not take into account the real size of
+the display when the Dragon Bar is visible.
 
 # Emacs
 
@@ -52,11 +55,11 @@ Although some of the above commands are pre-defined in DNL, they do not work wit
 
 ## Identifiers
 
-| Command                   | Description                                 |
-|---------------------------|---------------------------------------------|
-| `constant <dictation>`    | Inserts `DICTATION_FORMATTED_LIKE_THIS`     |
-| `lisp <dictation>`        | Inserts `dictation-formatted-like-this`     |
-| `lower camel <dictation>` | Inserts `dictationFormattedLikeThis`        |
-| `score <dictation>`       | Inserts `dictation_formatted_like_this`     |
-| `upper camel <dictation>` | Inserts `DictationFormattedLikeThis`        |
-
+| Command                    | Description                                 |
+|----------------------------|---------------------------------------------|
+| `constant <dictation>`     | Inserts `DICTATION_FORMATTED_LIKE_THIS`     |
+| `lisp <dictation>`         | Inserts `dictation-formatted-like-this`     |
+| `lower camel <dictation>`  | Inserts `dictationFormattedLikeThis`        |
+| `score <dictation>`        | Inserts `dictation_formatted_like_this`     |
+| `upper camel <dictation>`  | Inserts `DictationFormattedLikeThis`        |
+| `lower spaced <dictation>` | Inserts `dictation formatted like this`     |

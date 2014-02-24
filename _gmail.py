@@ -15,8 +15,9 @@ class GMailMappings(MappingRule):
         'open message': Key('o'),
     }
 
-context = AppContext(title='@gmail.com - Gmail')
-grammar = Grammar('GMail',context=context)
+context1 = AppContext(title=' Gmail')
+context2 = AppContext(title='@gmail.com')
+grammar = Grammar('GMail',context=(context1 & context2))
 grammar.add_rule(GMailMappings())
 grammar.load()
 
