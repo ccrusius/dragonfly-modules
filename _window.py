@@ -8,6 +8,15 @@ from dragonfly.windows.rectangle import Rectangle
 from difflib import get_close_matches
 from time import sleep
 
+class PrintWindowDetails(CompoundRule):
+    spec='print window details'
+    def _process_recognition(self,node,extras):
+        window=Window.get_foreground()
+        print 'Window details'
+        print 'title=',window.title
+        print 'executable=',window.executable
+        print 'window=',window
+
 class FocusWindow(CompoundRule):
     spec='focus <name>'
     extras=[Dictation('name')]
@@ -29,13 +38,10 @@ class FocusWindow(CompoundRule):
         if not matches: return
         for window in windows:
             if matches[0] in [window.executable.lower(),window.title.lower()]:
-                for attempt in range(4):
-                    try:
-                        window.set_foreground()
-                    except Exception:
-                        sleep(0.2)
-                    else:
-                        break
+                # In Windows, this is not guaranteed to work. See:
+                # http://stackoverflow.com/questions/688337/how-do-i-force-my-app-to-come-to-the-front-and-take-focus
+                # http://msdn.microsoft.com/en-us/library/windows/desktop/ms633539(v=vs.85).asp                
+                window.set_foreground()
                 return
         
 class BasicWindowOps(CompoundRule):
@@ -84,6 +90,7 @@ class SnapWindowRule(CompoundRule):
             'bottom half': [ 0, 0.5, 1, 0.5 ],
             'bottom left': [ 0, 0.5, 0.5, 0.5 ],
             'left half': [ 0, 0, 0.5, 1 ],
+            'whole monitor': [ 0, 0, 1, 1 ],
         })]
 
     @staticmethod
@@ -101,6 +108,7 @@ class SnapWindowRule(CompoundRule):
         self.snap_window(Window.get_foreground(),extras['region'])
 
 grammar =  Grammar('window control')
+grammar.add_rule(PrintWindowDetails())
 grammar.add_rule(BasicWindowOps())
 grammar.add_rule(SnapWindowRule())
 grammar.add_rule(MoveToMonitorRule())
