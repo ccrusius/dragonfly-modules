@@ -11,8 +11,9 @@ class GMailMappings(MappingRule):
         'reply to author': Key('r'),
         'reply to all': Key('a'),
         'select message': Key('x'),
-        'erase message': Key('hash'),
+        'delete message': Key('hash'),
         'open message': Key('o'),
+        'send message': Key('c-enter'),
     }
 
 context1 = AppContext(title=' Gmail')
