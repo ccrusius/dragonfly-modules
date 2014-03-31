@@ -9,8 +9,11 @@
 from dragonfly import(Config, Section, Item,
                       Grammar, ConnectionGrammar, AppContext,
                       MappingRule, CompoundRule,
-                      Key, IntegerRef,
+                      Key, Integer, IntegerRef,
                       DictList, DictListRef)
+import tempfile
+import os
+import os.path
 
 config = Config('Microsoft Outlook control')
 config.lang = Section('Language section')
@@ -100,6 +103,34 @@ class MoveToFolderRule(CompoundRule):
             item.Move(folder)
 
 grammar.add_rule(MoveToFolderRule())
+
+class OpenAttachmentRule(CompoundRule):
+    spec='open attachment <n>'
+    extras=[Integer('n', 1, 10)]
+    def _process_recognition(self,node,extras):
+        index=extras['n']
+        explorer=self.grammar.get_active_explorer()
+        if not explorer: return
+        if explorer.Selection.Count < 0:
+            self._log.warning('%s: no selected, not opening.' % self)
+            return
+        elif explorer.Selection.Count > 1:
+            self._log.warning('%s: multiple items selected, not opening.' % self)
+            return
+        item=explorer.Selection.Item(1)
+        if not (1 <= index <= item.Attachments.Count):
+            self._log.warning('%s: attachment index %d of item %r'
+                              ' out of range (1 <= index <= %d).'
+                              % (self, index, item.Subject, item.Attachments.Count))
+            return
+        attachment=item.Attachments.Item(index)
+        filename=os.path.basename(attachment.FileName)
+        temp_dir=tempfile.mkdtemp()
+        path=os.path.join(temp_dir,filename)
+        attachment.SaveAsFile(path)
+        os.startfile(path)
+
+grammar.add_rule(OpenAttachmentRule())
 
 class OutlookMappings(MappingRule):
     """outlook keyboard shortcuts"""
