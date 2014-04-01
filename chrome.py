@@ -16,7 +16,7 @@ class GlobalChromeMappings(MappingRule):
         'go to address': Key('a-d'),
         'reload page': Key('r'),                         # vimium
         'show labels': Key('f'),                         # vimium
-        'show labels in new tab': Key('escape/25, s-f'), # vimium
+        'show labels in new tab': Key('s-f'),            # vimium
         '(go to) label <number>': Text('%(number)d'),    # vimium
         'duplicate tab': Key('y,t'),                     # vimium
         }
