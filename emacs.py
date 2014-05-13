@@ -207,9 +207,10 @@ class EmacsGlobalMappings(MappingRule):
 class EmacsPythonMappings(MappingRule):
     """Emacs mappings for python coding"""
     mapping = {
-        '(new|create) python class': Key('a-colon')+Text('(python-skeleton-class)')+Key('enter'),
-        '(new|create) python function': Text('def ():')+Key('left:3')
-        }
+        'python class': Key('a-colon')+Text('(python-skeleton-class)')+Key('enter'),
+        'python (function|method)': Text('def ():')+Key('left:3'),
+        'python if': Text('if :')+Key('left'),
+    }
 
 context = AppContext(executable="emacs")
 grammar = Grammar("GNU Emacs", context=context)
