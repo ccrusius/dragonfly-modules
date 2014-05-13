@@ -15,12 +15,20 @@ and NatLink will pick the macros up.
 | `restore window`                  | Restore current window to non-maximized size      |
 | `focus <window name>`             | Bring named window to the foreground              |
 
-* `<places>`: One of `top (left | half | right)`, `bottom (left | half | right)`, `left half`, `right half`.
+* `<places>`: One of `top (left | half | right)`, `bottom (left | half | right)`, `left half`, `right half`, `whole monitor`.
 
-Although some of the above commands are pre-defined in DNL, they do not work
-with some applications (such as Emacs). Some of those commands are also
-present in SpeechStart+, but they do not take into account the real size of
-the display when the Dragon Bar is visible.
+Although some of the above commands are pre-defined or have equivalents in DNL/SpeechStart+, they do not work
+with some applications (such as Emacs and/or Internet Explorer).
+
+# Chrome
+
+Vimium should be installed, and GMail keyboard shortcuts enabled. In vimium, replace
+the characters for option "Characters used for link hints" by `123456789`.
+
+| Command                           | Description                                       |
+|-----------------------------------|---------------------------------------------------|
+| `show labels`                     | Show labels for every clickable item.             |
+
 
 # Emacs
 
