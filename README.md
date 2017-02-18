@@ -1,3 +1,7 @@
+> *Note:* I have not used Windows for some time, and this project
+> is abandoned. I am keeping the repository around because a few
+> people are still interested in it, but it may vanish in the future.
+
 Speech recognition macros, using dragonfly. Used with Dragon
 NaturallySpeaking (DNL) 12 and SpeechStart+, in Windows 7 64 bits.
 
